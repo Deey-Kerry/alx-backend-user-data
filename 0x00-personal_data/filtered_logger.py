@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""function called filter_datum that returns the log
-message obfuscated
+"""function called filter_datum that returns the log message obfuscated
 """
 import os
 import re
@@ -55,8 +54,7 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
 
 
 def main():
-    """This is the main function that logs in user information
-    in the database
+    """logs in user information in the database
     """
     fields = "name,email,phone,ssn,password,ip,last_login,user_agent"
     columns = fields.split(',')
@@ -78,7 +76,9 @@ def main():
 
 
 class RedactingFormatter(logging.Formatter):
-    """The class for formatting redacting"""
+    """ class for Redacting Formatter
+    """
+
     REDACTION = "***"
     FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
     FORMAT_FIELDS = ('name', 'levelname', 'asctime', 'message')
@@ -89,7 +89,8 @@ class RedactingFormatter(logging.Formatter):
         self.fields = fields
 
     def format(self, record: logging.LogRecord) -> str:
-        """Formatting self records"""
+        """formats a self record.
+        """
         msg = super(RedactingFormatter, self).format(record)
         txt = filter_datum(self.fields, self.REDACTION, msg, self.SEPARATOR)
         return txt
