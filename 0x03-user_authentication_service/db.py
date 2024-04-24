@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
+"""DB module
 """
-Main file
-"""
-
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -14,49 +12,51 @@ from user import Base, User
 
 
 class DB:
-    """class for the db"""
-     def __init__(self) -> None:
-         """Initializing database"""
-          self._engine = create_engine("sqlite:///a.db")
+    """DB class instance
+    """
+
+    def __init__(self) -> None:
+        """Initializaton of  a new DB
+        """
+        self._engine = create_engine("sqlite:///a.db", echo=False)
         Base.metadata.drop_all(self._engine)
         Base.metadata.create_all(self._engine)
         self.__session = None
 
     @property
     def _session(self) -> Session:
-        """funtion session"""
+        """Session object
+        """
         if self.__session is None:
             DBSession = sessionmaker(bind=self._engine)
             self.__session = DBSession()
         return self.__session
 
     def add_user(self, email: str, hashed_password: str) -> User:
-        """ Adds users to db with info """
-        new_user = User(email=email, hashed_password=hashed_password)
-        self._session.add(new_user)
+        """Adds users to the db"""
+
+        user = User(email=email, hashed_password=hashed_password)
+        self._session.add(user)
         self._session.commit()
-        return new_user
+        return user
 
     def find_user_by(self, **kwargs) -> User:
-        """ Finds users by first name args """
-
-        try:
-            record = self._session.query(User).filter_by(**kwargs).first()
-        except TypeError:
+        """Finds users by in db"""
+        if not kwargs:
             raise InvalidRequestError
-        if record is None:
+
+        user = self._session.query(User).filter_by(**kwargs).first()
+        if not user:
             raise NoResultFound
-        return record
+        return user
 
     def update_user(self, user_id: int, **kwargs) -> None:
-        """ Updates user records"""
-        user_record = self.find_user_by(id=user_id)
-
+        """Updating user in db"""
+        user = self.find_user_by(id=user_id)
         for key, value in kwargs.items():
-            if hasattr(user_record, key):
-                setattr(user_record, key, value)
-            else:
+            if not hasattr(user, key):
                 raise ValueError
+            setattr(user, key, value)
 
         self._session.commit()
         return None
